@@ -10,7 +10,21 @@ module.exports = function (app, db) {
 
 		const { gender, season } = req.query;
 		let garments = [];
+		
 		// add some sql queries that filter on gender & season
+		//garments = await db.any(`select season, gender from garment`);
+		if (!gender && !season) {
+			garments = await db.many(`select * from garment`);
+		}
+		else if (gender && !season){
+			garments = await db.many(`select * from garment where gender = $1`, [gender]);
+		}
+		else if (!gender && season){
+			garments = await db.many(`select * from garment where season = $1`, [season]);
+		} else if (gender && season) {
+			garments = await db.many(`select * from garment where season = $1 and gender = $2`, [season], [gender]);
+		}
+
 
 		res.json({
 			data: garments
@@ -25,6 +39,7 @@ module.exports = function (app, db) {
 
 			const { id } = req.params;
 			// const garment = await db.oneOrNone(`select * from garment where id = $1`, [id]);
+			const garment = await db.one(`select * from garment where id = $1`, [id]);
 
 			// you could use code like this if you want to update on any column in the table
 			// and allow users to only specify the fields to update
